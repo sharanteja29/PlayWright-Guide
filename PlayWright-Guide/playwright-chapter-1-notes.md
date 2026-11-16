@@ -1,9 +1,8 @@
 # Playwright – Chapter 1: Introduction, Setup & First Test
 
-**Video duration:** Approximately 1 hr 37 min  
 **Level:** Beginner
 
-These notes follow the instructor’s sequence and cover the nine sections in the Chapter 1 transcript. Additional learning suggestions are listed separately at the end; they are not incorporated as new chapter topics.
+This chapter explains the purpose of Playwright, environment setup, project structure, first tests, fixtures, asynchronous operations, execution and debugging, and the basic architecture comparison. Additional learning suggestions are listed separately at the end.
 
 ## Contents
 
@@ -26,17 +25,15 @@ These notes follow the instructor’s sequence and cover the nine sections in th
 
 ## 1.1 Purpose of the session
 
-This session starts the Playwright automation course. It introduces the development environment, project setup, project files, a basic test, fixtures, asynchronous programming, test execution and debugging, and Playwright’s architecture.
-
-The instructor notes that a previous session covered Playwright’s introduction and comparison with Selenium. This chapter moves directly into installation and practical setup.
+Playwright is a browser automation framework. A test script gives the browser a sequence of actions, such as opening a page, interacting with controls, and checking the result. This chapter builds the foundation for that workflow: preparing a project, writing a test, understanding the objects supplied to it, and running the test.
 
 ## 1.2 Official documentation
 
-The instructor recommends the [official Playwright documentation](https://playwright.dev/docs/intro) as a reference while learning. It includes installation, writing and generating tests, running tests, Trace Viewer, CI setup, and feature documentation. Reading documentation should be paired with coding and execution so that you see how a feature behaves.
+The [official Playwright documentation](https://playwright.dev/docs/intro) is the reference for installation, writing and generating tests, running tests, Trace Viewer, CI setup, and Playwright features. Use documentation to check exact syntax and available options, then run a small example to connect the written description to actual behavior.
 
 ## 1.3 Supported languages
 
-Playwright supports TypeScript, JavaScript, Python, Java, and .NET. This course uses **TypeScript with Node.js**. The instructor notes that TypeScript and JavaScript are closely related for the Playwright examples in this course.
+Playwright supports TypeScript, JavaScript, Python, Java, and .NET. These are language bindings for controlling browsers through Playwright. This course uses **TypeScript with Node.js**. TypeScript adds static type checking to JavaScript and is compiled/transformed for execution in the Node.js environment; the Playwright test APIs used here are familiar to JavaScript developers.
 
 ---
 
@@ -71,7 +68,7 @@ Terminology:
 - A **package** is reusable software used by a project.
 - **TypeScript** is the language; Playwright Test is the test framework; Node.js provides the runtime.
 
-If Node.js is already installed for TypeScript work, the instructor says it does not need to be installed again. The Playwright initializer can configure the TypeScript project; a separate global TypeScript installation is not needed for this course setup.
+If Node.js is already installed for TypeScript work, it can be used for this project too. The initializer sets up the Playwright project and its TypeScript files, so a separate global TypeScript installation is not required for this setup.
 
 ---
 
@@ -96,11 +93,13 @@ Run the project initializer in the project folder:
 npm init playwright@latest
 ```
 
+The initializer creates the initial project files, installs the Playwright Test package, and offers configuration choices. Running it from the intended project folder matters because that folder becomes the root for the package manifest, configuration, tests, and installed dependencies.
+
 The initializer asks several configuration questions.
 
 1. **Programming language:** select TypeScript for this course.
 2. **Test folder:** keep the default `tests` folder unless you have a reason to choose another.
-3. **GitHub Actions workflow:** the instructor leaves this disabled at this stage. GitHub Actions can automate workflows such as running tests after code is pushed.
+3. **GitHub Actions workflow:** this is optional at project creation. GitHub Actions can automate workflows such as running tests after code is pushed. It is reasonable to leave it disabled while focusing on local setup.
 4. **Install Playwright browsers:** select **Yes** so the browser binaries needed to run the tests are installed.
 
 ## 3.3 Browser engines
@@ -113,7 +112,7 @@ Playwright supports three major browser engines:
 | Firefox | Firefox |
 | WebKit | Used by Safari |
 
-Chromium is an engine, not the Chrome product itself. WebKit is the engine associated with Safari.
+Chromium, Firefox, and WebKit are browser engines: the underlying software that interprets web pages and implements browser behavior. Chrome and Edge are products built on Chromium; Safari uses WebKit; Firefox uses its own engine. Running tests against different engines can expose browser-specific differences in layout, rendering, or interaction behavior.
 
 ## 3.4 Useful setup and execution commands
 
@@ -125,7 +124,7 @@ Chromium is an engine, not the Chrome product itself. WebKit is the engine assoc
 | `node --version` | Display the Node.js version. |
 | `npm --version` | Display the npm version. |
 
-The instructor introduces these test commands here and discusses them further in Section 8:
+The following commands are used to run and inspect tests:
 
 ```bash
 npx playwright test
@@ -159,7 +158,7 @@ PW-Demos/
 
 ## 4.1 `node_modules`
 
-This folder contains the dependencies installed for the project, including Playwright packages and their dependencies. It is created during dependency installation. Do not edit its contents manually; it is generally excluded from Git through `.gitignore`.
+This folder contains the dependencies installed for the project, including Playwright packages and their dependencies. A package can itself depend on other packages, so the folder may contain many nested dependencies. It is created from the project’s package manifest and lockfile during installation. Do not edit its contents manually; it can be recreated and is generally excluded from Git through `.gitignore`.
 
 ## 4.2 `tests`
 
@@ -185,7 +184,7 @@ For JavaScript, use `.spec.js`. The `.spec` naming convention matches Playwright
 
 ## 4.4 `playwright.config.ts`
 
-This is the main Playwright configuration file. The instructor discusses the test directory, parallel execution, workers, reporters, browser projects, and execution settings.
+This is the main Playwright configuration file. It tells the test runner where tests are located and how to run them, including browser projects, reporter choice, and execution settings.
 
 Illustrative configuration:
 
@@ -216,11 +215,11 @@ export default defineConfig({
 });
 ```
 
-This example illustrates the concepts covered in the transcript. Browser engines can be separate projects. With all three configured, a test can run against all three; a particular project can also be selected at runtime (covered later in the course).
+This example defines three projects. A project is a named configuration for a particular browser/device setup. With all three enabled, the same test suite can be run in each configured engine. Selecting a single project at runtime is useful when you want a faster focused run or need to investigate browser-specific behavior.
 
 ## 4.5 `package.json`
 
-This file contains project metadata, dependencies, development dependencies, and scripts. Example:
+This file is the project’s package manifest. It contains metadata, dependencies, development dependencies, and scripts. npm reads it to know which packages the project needs. Example:
 
 ```json
 {
@@ -232,7 +231,7 @@ This file contains project metadata, dependencies, development dependencies, and
 }
 ```
 
-The version is illustrative only. The instructor compares the Node.js project setup with Java Maven projects:
+The version is illustrative only. `package.json` plays a central role in describing the Node.js project and its dependencies. A rough ecosystem comparison is:
 
 | Java project | Node.js project |
 |---|---|
@@ -248,7 +247,7 @@ Maven is not required for this Playwright project.
 - `test-results` stores execution artifacts and result-related information.
 - `playwright-report` stores the generated HTML report when one is configured or generated.
 
-The report is opened during the test-running discussion in Section 8.
+The report can be opened after execution to inspect test outcomes and failure details; see Section 8.
 
 ## 4.7 Project-specific installation
 
@@ -314,7 +313,7 @@ test('Verify page content', async ({ page }) => {
 });
 ```
 
-Each test has its own title and callback.
+Each test has its own title and callback. The title appears in test results, so it should state the behavior or outcome being checked. Keeping tests as separate cases gives each one its own result and makes failures easier to locate.
 
 ---
 
@@ -322,10 +321,10 @@ Each test has its own title and callback.
 
 ## 6.1 What is a fixture?
 
-A fixture supplies the resources and setup needed by a test. The video introduces the `page` and `browser` fixtures.
+A fixture supplies a test with a resource or prepared state. Playwright Test manages fixture setup and cleanup around test execution, so tests can request what they need as callback parameters. A fixture helps make tests more consistent because the runner controls how the resource is prepared and made available. This chapter introduces the `page` and `browser` fixtures.
 
 - **`page`:** a browser tab/page used to navigate, interact with the application, retrieve information, and validate behavior.
-- **`browser`:** the browser instance. The instructor introduces it here and postpones its detailed explanation.
+- **`browser`:** the browser instance that can host browser contexts. It is introduced here; this chapter focuses mainly on `page`.
 
 ## 6.2 Receiving the `page` fixture
 
@@ -335,7 +334,7 @@ test('Verify page title', async ({ page }) => {
 });
 ```
 
-The braces destructure `page` from the fixture object supplied by the Playwright Test runner. You do not manually construct this fixture in a basic test.
+The braces use JavaScript/TypeScript object destructuring to take the `page` property from the fixture object supplied by the Playwright Test runner. The runner creates and provides the fixture for each test according to its lifecycle. You do not manually construct it in a basic test.
 
 For a banking application, the page is the interface used to open the application, enter a username and password, click Login, and verify the dashboard.
 
@@ -345,7 +344,7 @@ For a banking application, the page is the interface used to open the applicatio
 await page.goto('https://example.com');
 ```
 
-`page` is the page fixture, `goto()` performs navigation, and `await` waits for the asynchronous navigation operation to complete.
+`page` is the page fixture and `goto()` requests navigation to the supplied URL. The method returns a Promise because navigation takes time and can involve network activity, redirects, and page loading. `await` pauses this test callback until the navigation Promise settles, so later steps run after the navigation operation completes.
 
 ## 6.4 Read the page title and URL
 
@@ -357,7 +356,7 @@ const currentURL = page.url();
 console.log(currentURL);
 ```
 
-`page.title()` returns the title asynchronously, so the example awaits it. The URL example in the video reads the current URL as a string.
+`page.title()` returns a Promise for the document title, so the example awaits it before storing the resulting string. `page.url()` returns the current URL synchronously as a string. The distinction matters: the variable should contain the value you intend to inspect or print, not a Promise representing work that has not finished.
 
 ## 6.5 Assert the title
 
@@ -365,7 +364,7 @@ console.log(currentURL);
 await expect(page).toHaveTitle('Example Domain');
 ```
 
-`expect(page)` creates an assertion against the page. `toHaveTitle()` checks the actual page title against the expected string. A match passes; a mismatch fails.
+`expect(page)` creates an assertion subject. `toHaveTitle()` is a web-first assertion: it checks the page title and can retry while the page reaches the expected state, up to the assertion timeout. This is useful when a title is updated during navigation. A matching title passes; if it does not match before the timeout, the assertion fails with diagnostic output.
 
 ## 6.6 Complete first test
 
@@ -384,23 +383,25 @@ test('Verify page title', async ({ page }) => {
 
 Execution flow:
 
-1. Import `test` and `expect`.
-2. Define a test.
-3. Receive the `page` fixture.
-4. Navigate to the site.
-5. Read and print the title.
+1. Import `test` and `expect` from Playwright Test.
+2. Register a test with a readable title.
+3. Receive the `page` fixture from the runner.
+4. Navigate to the site and wait for the navigation operation.
+5. Read and print the title for observation.
 6. Assert the expected title.
-7. Playwright reports whether the test passed or failed.
+7. The runner records the test as passed or failed and reports diagnostic information if an operation or assertion fails.
+
+The `console.log` line is useful while learning, but the assertion is what makes the test automatically verify behavior. A test that only prints a value does not fail just because the value is unexpected.
 
 ---
 
 # 7. Async, Await and Promise Concepts
 
-The instructor emphasizes async and await because browser automation operations involve asynchronous work.
+Async and await are essential because browser automation communicates with a browser that performs work over time. Navigation, locating and interacting with elements, and reading many page properties may involve asynchronous operations. Awaiting these operations helps keep dependent test steps in the intended order.
 
 ## 7.1 Synchronous and asynchronous execution
 
-Synchronous statements execute in order; the next step waits for the current step to finish:
+Synchronous statements run one after another on the current JavaScript execution path. Each statement completes before execution moves to the next:
 
 ```typescript
 console.log('Step 1');
@@ -408,11 +409,11 @@ console.log('Step 2');
 console.log('Step 3');
 ```
 
-Asynchronous work includes operations such as network requests, database or file operations, and browser navigation. In the transcript’s customer example, checking account status depends on first retrieving customer details. The dependent step must wait for its input.
+Asynchronous work includes operations such as network requests, database or file operations, and browser navigation. Starting such work may return immediately with a Promise while the operation continues. If checking an account status depends on first retrieving customer details, the second operation must use the completed result of the first. Awaiting expresses that dependency clearly.
 
 ## 7.2 Promise states
 
-A Promise represents the eventual result of asynchronous work.
+A Promise is an object that represents work that may finish later and the value or error it will produce. Creating a Promise does not mean the work has already succeeded; it only gives the program a way to observe its eventual outcome.
 
 | State | Meaning |
 |---|---|
@@ -424,7 +425,7 @@ For example, `fetch()` returns a Promise; the response data is not immediately a
 
 ## 7.3 `await`
 
-`await` waits for a Promise to settle and gives the fulfilled value to the expression. If the Promise rejects, the error is thrown and can be handled by error handling.
+`await` suspends the current async function until the Promise settles. If fulfilled, the expression evaluates to the fulfillment value. If rejected, the rejection becomes an exception at that point and can be handled with `try`/`catch` or allowed to fail the test. Awaiting does not freeze the entire JavaScript runtime; other work can continue while this function is waiting.
 
 Without awaiting an asynchronous title call, the variable holds a Promise:
 
@@ -438,7 +439,7 @@ With `await`, it holds the resolved title string:
 const title = await page.title();
 ```
 
-This is why the transcript demonstrates adding `await` when retrieving a title for logging; otherwise the output may be a pending Promise rather than the title value.
+When retrieving a title for logging, add `await`; otherwise the output may be a Promise rather than the title value.
 
 ## 7.4 `async`
 
@@ -451,19 +452,19 @@ test('Verify page title', async ({ page }) => {
 });
 ```
 
-The key relationship taught in the video is: use `async` on the function containing `await`, and use `await` for the Promise-returning operation whose result or completion the next step needs.
+Use `async` on a function that needs to use `await`. An async function itself returns a Promise. Use `await` on a Promise-returning operation when the next step depends on its completion or result. This lets sequential test code express asynchronous dependencies without nesting callbacks.
 
 ## 7.5 Applying async/await to Playwright steps
 
-Navigation and other browser operations complete asynchronously. Awaiting them makes the test sequence explicit: navigate, then obtain the title, then assert. The transcript demonstrates that an assertion can pass while a separate title logging statement still fails to display the actual value if that title Promise was not awaited.
+Navigation and many browser operations complete asynchronously. Awaiting them makes the dependency explicit: navigate, then obtain the title, then assert. If a Promise is passed to `console.log` without awaiting, the output may show a Promise object or pending state instead of the resolved title. An assertion is a separate operation; its success does not automatically resolve an unrelated Promise that was started for logging.
 
-**Clarification:** The transcript informally generalizes that every automation statement returns a Promise. In practice, await only operations that return Promises; synchronous getters such as `page.url()` do not need `await`. The example above reflects this distinction.
+**Important distinction:** Not every automation statement returns a Promise. Await operations that return Promises; synchronous getters such as `page.url()` do not need `await`.
 
 ---
 
 # 8. Running and Debugging Tests
 
-## 8.1 Commands introduced
+## 8.1 Running modes and commands
 
 Run all discovered tests:
 
@@ -489,11 +490,11 @@ Run in debug mode:
 npx playwright test --debug
 ```
 
-The transcript also asks learners to explore running in headless mode, opening the report, running one or multiple tests, and targeting a specific browser project. Headless execution is the default in the shown configuration (`headless: true`); headed mode displays the browser window. The instructor says to practice the options rather than rush ahead.
+Also practice headless execution, opening the report, running one or multiple tests, and targeting a specific browser project. Headless execution runs the browser without displaying its window; it is useful for routine automated runs. Headed execution displays the browser and helps you observe what the test is doing. The shown configuration sets `headless: true`.
 
 ## 8.2 Reports
 
-The project includes a `playwright-report` folder for an HTML report when generated. The instructor demonstrates viewing the report in this part of the course and encourages practicing the report command/flow alongside UI, headed, headless, and debug execution.
+The project includes a `playwright-report` folder for an HTML report when generated. The report summarizes test outcomes and helps you inspect failures. UI Mode provides an interactive way to explore test runs; debug mode supports stepping through execution and inspecting state. Headed mode makes browser actions visible, while headless mode keeps execution in the background.
 
 ---
 
@@ -501,23 +502,23 @@ The project includes a `playwright-report` folder for an HTML report when genera
 
 ## 9.1 Why learn the architecture?
 
-The instructor introduces architecture as an explanation of how an automation tool works internally and compares Playwright with Selenium. This section is intended as a simple conceptual and interview-level overview.
+Architecture describes how the test code communicates with the browser and how browser commands are carried out. The comparison below is a high-level conceptual overview of Playwright and Selenium.
 
-## 9.2 Protocol and connection comparison in the lecture
+## 9.2 Protocol and connection comparison
 
-The lecture’s comparison is:
+The high-level comparison is:
 
-| Selenium (as presented in the lecture) | Playwright (as presented in the lecture) |
+| Selenium | Playwright |
 |---|---|
 | Uses the W3C WebDriver protocol over HTTP requests. | Uses a WebSocket connection for communication. |
-| The lecture describes requests as opening and closing a connection repeatedly. | The lecture describes establishing a connection, sending multiple commands over it, then closing it. |
-| Uses browser-specific drivers. | The lecture says Playwright communicates with supported browsers without separate browser-specific WebDriver drivers. |
+| The communication model is based on WebDriver commands sent through a driver. | A persistent WebSocket connection can carry successive messages while it is open. |
+| WebDriver uses browser-specific driver implementations. | Playwright provides its own browser automation runtime and supported browser integrations. |
 
-The central takeaway for the course is that Playwright uses a persistent WebSocket-based communication path, while the lecture contrasts this with Selenium’s WebDriver/HTTP model. The documentation provides further architecture detail.
+The central takeaway is that the tools use different communication models: Selenium’s WebDriver standard defines commands sent through a driver, while Playwright maintains browser communication over its own protocol. The WebSocket connection can carry successive messages while it remains open. Protocol choice is only one part of architecture; it does not by itself guarantee that every test run will be faster, since execution also depends on the page, network, and test workload.
 
 ## 9.3 Client and browser communication
 
-The client/language bindings are the programming language interface used to write the test script. The lecture describes a WebSocket connection being established so commands can be sent in sequence without creating a new connection for every command. This is presented as a reason the interaction can be faster.
+The client or language binding is the API your TypeScript test calls. When the script requests an action, Playwright’s runtime communicates with the browser, and browser events and results are returned to the test. A WebSocket is a persistent, two-way connection: after it is established, messages can travel in both directions without setting up a fresh connection for each command. This supports ongoing communication between the automation client and browser.
 
 ---
 
@@ -533,19 +534,19 @@ Practice the topics covered in this chapter:
 6. Run tests against a specific browser project.
 7. Review the project files and the official documentation.
 
-The instructor advises practicing patiently and learning the topics step by step.
+Work through the exercises one step at a time, confirm that each command behaves as expected, and use failures as clues about the setup or test flow.
 
 ---
 
 # 11. Additional Topics Suggested for a Later Chapter
 
-The transcript mentions that the first session covered Playwright’s general introduction and Selenium comparison, but those details are not part of the provided Chapter 1 transcript. For continuity, these could be covered separately later:
+The following related topics can be explored separately later, since this chapter only introduces them briefly:
 
 - A deeper explanation of Playwright’s feature set and limitations.
 - A fuller comparison of Playwright and Selenium architecture.
 - A more detailed explanation of browser, BrowserContext, and page lifecycles.
 
-These are suggestions only and have not been added as new lesson content.
+These are suggestions only and are kept separate from the chapter content.
 
 ---
 
@@ -556,8 +557,8 @@ These are suggestions only and have not been added as new lesson content.
 - **Browser vs. browser engine:** Chromium, Firefox, and WebKit are engines; Chrome, Edge, Firefox, and Safari are browser products associated with those engines.
 - **Project dependencies:** Each independent project needs its own package configuration and dependencies.
 - **Promises and `await`:** Await Promise-returning operations when the test needs their completion or resolved value. Not every Playwright API is asynchronous; for example, the `page.url()` getter is synchronous.
-- **Architecture comparison:** The protocol discussion above records the instructor’s simplified comparison from the video; use the official Playwright and Selenium documentation for deeper implementation details.
-- **Additional material:** Suggestions are clearly separated so they are not silently mixed into transcript-based notes.
+- **Architecture comparison:** The protocol discussion above is a high-level comparison. Use the official Playwright and Selenium documentation for deeper implementation details.
+- **Additional material:** Suggestions are clearly separated so they are not mixed into the chapter’s covered topics.
 
 ## Revision questions
 
@@ -573,5 +574,5 @@ These are suggestions only and have not been added as new lesson content.
 10. What are the pending, fulfilled, and rejected states of a Promise?
 11. What is the difference between headed and headless execution?
 12. Which commands open UI Mode and debug mode?
-13. How does the lecture compare Selenium’s HTTP/WebDriver communication with Playwright’s WebSocket communication?
+13. How do Selenium’s WebDriver communication and Playwright’s WebSocket communication differ at a high level?
 14. What should you practice before moving on to the next class?
